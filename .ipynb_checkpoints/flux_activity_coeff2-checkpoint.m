@@ -51,8 +51,9 @@ slope = zeros(size(maty,1),2);
 for i = 1:size(maty,1)
     m1 = mean(maty(i,:));
     [p S] = polyfit(timevec, maty(i,:),1);
-    slope(i,:) = p(1)/p(2);
-    %slope(i,:) = p(1);
+    p
+    slope(i,:) = p(1)/abs(p(2));
+%     slope(i,:) = p(1);
 end
 % normalize the data so that the F.A.C is a small number less than 1
 slope(:,1) = slope(:,1)/10;

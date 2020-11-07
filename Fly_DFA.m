@@ -1,9 +1,9 @@
 fly = load('FlySilico.mat');
 fly = fly.FlySilico_v1;
-path = 'Mets_G3_PLOS_GR.xlsx';
-sheetname_early = 'PLOS_FirstHalf';
-sheetname_late = 'PLOS_SecondHalf';
-sheetname = 'PLOS_BestMatch';
+path = 'FlyData.xlsx';
+sheetname_early = 'G3_FirstHalf';
+sheetname_late = 'G3_SecondHalf';
+sheetname = 'G3_BestMatch';
 [num txt] = xlsread(path,sheetname);
 
 
@@ -41,7 +41,7 @@ for i=1:length(l_v);
     S1(2:end, i) = slope(:, 1);
 
     [dynamicmodel,grate_wt,~,rxnko_growthrate,slope,~,~,~] = flux_activity_coeff2(model,path,sheetname_late,1,1E-3,0,1);
-    rxnko_growthrate
+    
     % Late stage
     % Find growth rates for gene deletions.
     gh = rxnko_growthrate;

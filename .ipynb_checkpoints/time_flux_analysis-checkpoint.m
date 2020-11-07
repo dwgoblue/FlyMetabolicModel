@@ -1,4 +1,4 @@
-function [dynamicmodel,grate_wt, geneko_growthrate, rxnko_growthrate,slope,solverobj,geneko_growthrate_obj,rxnko_growthrate_obj] = flux_activity_coeff2(model, timecourse_metabolomics_datafile,sheetname,kappa,kappa2,genedelflag,rxndelflag)
+function [dynamicmodel,grate_wt, geneko_growthrate, rxnko_growthrate,slope,solverobj,geneko_growthrate_obj,rxnko_growthrate_obj] = time_flux_analysis(model, timecourse_metabolomics_datafile,sheetname,kappa,kappa2,genedelflag,rxndelflag,cols)
 
 if (~exist('kappa','var')) || (isempty(kappa))
     kappa = 1;
@@ -42,30 +42,26 @@ m2 = model;
 % load metabolomics data
 [num txt] = xlsread(timecourse_metabolomics_datafile,sheetname);
 manual_matchpos = num(2:end,1:3); % coresponding position in model
-timevec =  num(1, 4:end); % time points
-%timevec =  num(1, 4:9); % time points
-maty = num(2:end,4:end); % metabolomics data
-%maty = num(2:end,4:9); % metabolomics data
+%timevec =  num(1, 4:end); % time points
+% ts: start point (column)
+% n: interval (n>0)
+timevec =  num(1, cols) % time points
+%maty = num(2:end,4:end); % metabolomics data
+maty = num(2:end,cols); % metabolomics data
 maty = knnimpute(maty);
+% Pseudo basal value for correcting zeros ratio.
+maty = maty+0.00001;
+
 slope = zeros(size(maty,1),2);
 for i = 1:size(maty,1)
     m1 = mean(maty(i,:));
     [p S] = polyfit(timevec, maty(i,:),1);
-    p
+    timevec
     slope(i,:) = p(1)/abs(p(2));
-%     slope(i,:) = p(1);
+    %slope(i,:) = p(1);
 end
 % normalize the data so that the F.A.C is a small number less than 1
-slope(:,1) = slope(:,1)/10;
-%slope(:,1) = slope(:,1)./max(abs(slope(:,1))).*1; 
-%slope(:,1) = slope(:,1);
-%slope(1:154,1) = slope(1:154,1)./max(abs(slope(1:154,1))).*1; 
-%slope(155:326,1) = slope(155:326,1)./max(abs(slope(155:326,1))).*1; 
-
-%slope(1:154,1) = slope(1:154,1)./0.25; 
-%slope(155:326,1) = slope(155:326,1)./0.2; 
-%slope(slope(:,1)>1,1)=log10(slope(slope(:,1)>1,1))+1;
-%slope(slope(:,1)<-1,1)=-log10(-slope(slope(:,1)<-1,1))-1;
+slope(:,1) = slope(:,1);
 
 for i = 1:size(maty,1)
     ix0 = (manual_matchpos(:,1) ~= 0);
@@ -140,6 +136,7 @@ m2.A = sparse(m2.A);
 m2.vtype = repmat('C',size(m2.A,2),1);
 params.outputflag = 0;
 solg1 = gurobi(m2,params);
+% disp(solg1.x)
 grate_wt =  solg1.x(find(model_rpmi.c));
 solverobj = solg1;
 dynamicmodel = m2;
